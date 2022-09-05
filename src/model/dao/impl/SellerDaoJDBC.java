@@ -48,16 +48,8 @@ public class SellerDaoJDBC implements SellerDao {
 			// e sim OBJETOS, pois estamos programando em orientação a objetos; Portanto, precisamos associar o Department com Seller;
 			// Associação dos objetos;
 			if (rs.next()) { // Testar se veio algum resultado, pois o rs começa no 0;
-				Department dep = new Department(); // Instanciando um departamento, e associando abaixo os valores a ele;
-				dep.setId(rs.getInt("DepartmentId"));
-				dep.setName(rs.getString("DepName"));
-				Seller obj = new Seller(); // Agora, instanciando um vendedor, e associando abaixo os valores a ele;
-				obj.setId(rs.getInt("Id"));
-				obj.setName(rs.getString("Name"));
-				obj.setEmail(rs.getString("Email"));
-				obj.setBaseSalary(rs.getDouble("BaseSalary"));
-				obj.setBirthDate(rs.getDate("BirthDate"));
-				obj.setDepartment(dep); // É necessário aqui instanciar o departamento todo, logo, o objeto criado acima;
+				Department dep = instantiateDepartment(rs); // Chamando a função de instanciação de departamentos feito abaixo;
+				Seller obj = instantiateSeller(rs, dep); // Agora, chamando a instanciação de um vendedor, feito abaixo tb;
 				return obj;
 			}
 			return null; // Se n achar nd, retorna nulo, pois quer dizer q n tem nenhum vendedor, c esse id informado;
@@ -70,6 +62,24 @@ public class SellerDaoJDBC implements SellerDao {
 			DB.closeResultSet(rs);
 			// Não fecha a conexão, pois pode ter mais operações dentro desta classe, a conexão se fecha apenas no programa;
 		}
+	}
+
+	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException {
+		Seller obj = new Seller();
+		obj.setId(rs.getInt("Id"));
+		obj.setName(rs.getString("Name"));
+		obj.setEmail(rs.getString("Email"));
+		obj.setBaseSalary(rs.getDouble("BaseSalary"));
+		obj.setBirthDate(rs.getDate("BirthDate"));
+		obj.setDepartment(dep); // É necessário aqui instanciar o departamento todo, logo, o objeto criado acima;
+		return obj;
+	}
+
+	private Department instantiateDepartment(ResultSet rs) throws SQLException { // Função que fizemos somente para instanciar o departamento pro código acima não ficar tão verboso; E iremos propagar a exceção e não fzer outra, pq já fizemos lá em cima uma;
+		Department dep = new Department(); // Criando uma variável temporária local e instanciando o departamento c os dados abaixo;
+		dep.setId(rs.getInt("DepartmentId"));
+		dep.setName(rs.getString("DepName"));
+		return dep;
 	}
 
 	@Override

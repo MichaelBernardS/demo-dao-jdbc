@@ -5,7 +5,7 @@ import java.util.Objects;
 
 public class Department implements Serializable {
 
-	private static final long serialVersionUID = 1L; // Serializable em Java, serve para o objeto poder ser gravador em arquivo, trafegado em rede, sempre bom colocar;
+	private static final long serialVersionUID = 1L; // Serializable em Java, serve para o objeto poder ser gravado em arquivo, trafegado em rede, sempre bom colocar;
 	private Integer id;
 	private String name;
 	
@@ -39,7 +39,7 @@ public class Department implements Serializable {
 	}
 
 	@Override
-	public boolean equals(Object obj) { // hashCode e equals para os objetos possam ser comparados pelo CONTEÚDO e não pela ref. de ponteiros;
+	public boolean equals(Object obj) { // hashCode e equals para que os objetos possam ser comparados pelo CONTEÚDO e não pela ref. de ponteiros;
 		if (this == obj)
 			return true;
 		if (obj == null)
