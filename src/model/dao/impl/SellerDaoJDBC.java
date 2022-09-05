@@ -4,7 +4,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import db.DB;
 import db.DbException;
@@ -41,7 +44,7 @@ public class SellerDaoJDBC implements SellerDao {
 					"SELECT seller.*,department.Name as DepName " // Buscando tds os campos do vendedor + o nome do departamento (dando um apelido a ele como DepName)
 					+ "FROM seller INNER JOIN department " // Dando um JOIN para buscar os dados das 2 tabelas;
 					+ "ON seller.DepartmentId = department.Id " // Tanto de vendedor qnt departamento;
-					+ "WHERE seller.Id = ? "); // Onde o id será o informado abaixo (depois);
+					+ "WHERE seller.Id = ? "); // Onde o id será o: (informado abaixo);
 			st.setInt(1, id); // id que recebeu como parâmetro no método;
 			rs = st.executeQuery(); // Comando SQL vai ser executado, e o resultado vai cair dentro do resultSet;
 			// É preciso entender aqui, que ao buscar no BD uma tabela, ele n puxa as infos em forma de tabela, em linhas e colunas, 
@@ -64,18 +67,18 @@ public class SellerDaoJDBC implements SellerDao {
 		}
 	}
 
-	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException {
-		Seller obj = new Seller();
+	private Seller instantiateSeller(ResultSet rs, Department dep) throws SQLException { // Função que colocamos a parte para reaproveitá-la, p fazer o reuso da instanciação do vendedor, e não ficar um código verboso toda vez que for instanciá-lo; E iremos propagar a exceção e não fazer outra, pois já fizemos lá em cima;
+		Seller obj = new Seller(); // Criando uma variável temporária local e instanciando o vendedor c os dados abaixo;
 		obj.setId(rs.getInt("Id"));
 		obj.setName(rs.getString("Name"));
 		obj.setEmail(rs.getString("Email"));
 		obj.setBaseSalary(rs.getDouble("BaseSalary"));
 		obj.setBirthDate(rs.getDate("BirthDate"));
-		obj.setDepartment(dep); // É necessário aqui instanciar o departamento todo, logo, o objeto criado acima;
+		obj.setDepartment(dep); // É necessário aqui instanciar o departamento todo, logo, o objeto criado abaixo;
 		return obj;
 	}
 
-	private Department instantiateDepartment(ResultSet rs) throws SQLException { // Função que fizemos somente para instanciar o departamento pro código acima não ficar tão verboso; E iremos propagar a exceção e não fzer outra, pq já fizemos lá em cima uma;
+	private Department instantiateDepartment(ResultSet rs) throws SQLException { // Função que colocamos a parte para reaproveitá-la, p fzer o reuso da instanciação do departamento, e não ficar um código verboso toda vez que for instanciá-lo; E iremos propagar a exceção e não fazer outra, pois já fizemos lá em cima;
 		Department dep = new Department(); // Criando uma variável temporária local e instanciando o departamento c os dados abaixo;
 		dep.setId(rs.getInt("DepartmentId"));
 		dep.setName(rs.getString("DepName"));
@@ -85,5 +88,46 @@ public class SellerDaoJDBC implements SellerDao {
 	@Override
 	public List<Seller> findAll() {
 		return null;
+	}
+
+	@Override
+	public List<Seller> findByDepartment(Department department) {
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.prepareStatement(
+					"SELECT seller.*,department.Name as DepName " // Buscando tds os campos do vendedor + o nome do departamento (dando um apelido a ele como DepName)
+					+ "FROM seller INNER JOIN department " // Dando um JOIN para buscar os dados das 2 tabelas;
+					+ "ON seller.DepartmentId = department.Id " // Tanto de vendedor qnt departamento;
+					+ "WHERE DepartmentId = ? " // Onde o id será o: (informado abaixo);
+					+ "ORDER BY Name"); // Ordenado por nome, ou seja, ordem alfabética;
+			st.setInt(1, department.getId());
+			rs = st.executeQuery(); 
+			
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>(); // Integer = id do departamento; Department o valor de cada departamento; Estrutura de dados map criado vazio, p guardar qqer departamento que for instanciado;
+			
+			while (rs.next()) { // Neste caso é while, pois vai percorrer ENQNT tiver um próximo, pois pode não ter somente 1;
+				
+				Department dep = map.get(rs.getInt("DepartmentId")); // Map criado para buscar dentro do map se já existe o dep; Pois não pode repetir o departamento, tem que ser o mesmo pros vendedores que achar, não o repetindo; Não dando nulo, é pq o dep já existe, e vai puxar esse já existente p utilizar e não criar outro;
+				
+				if (dep == null) { // Se for nulo;
+					dep = instantiateDepartment(rs); // Ai sim vai instanciar o departamento; 
+					map.put(rs.getInt("DepartmentId"), dep); // Aqui vai guardar o departamento e identificar pela key dele (getInt department) e o departamento é o que tiver na variável dep;
+				}
+				
+				Seller obj = instantiateSeller(rs, dep); 
+				list.add(obj); // Adicionar esse vendedor na lista;
+			}
+			return list;
+		}
+		catch (SQLException e){
+			throw new DbException(e.getMessage());
+		}
+		finally { // finally para fechar todos os recursos;
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+			// Não fecha a conexão, pois pode ter mais operações dentro desta classe, a conexão se fecha apenas no programa;
+		}
 	}
 }
