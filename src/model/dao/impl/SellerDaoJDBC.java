@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +25,41 @@ public class SellerDaoJDBC implements SellerDao {
 	}
 
 	@Override
-	public void insert(Seller obj) {
+	public void insert(Seller obj) { // Função para inserir um novo vendedor;
+		PreparedStatement st = null;
+		try {
+			st = conn.prepareStatement(
+					"INSERT INTO seller "
+					+ "(Name, Email, BirthDate, BaseSalary, DepartmentId) "
+					+ "VALUES "
+					+ "(?, ?, ?, ?, ?)", 
+					Statement.RETURN_GENERATED_KEYS);
+			st.setString(1, obj.getName()); // Setando os valores, primeiro nome; 1 de primeira interrogação, e obj.getName() desse objeto (obj) q veio como parâmetro de entrada; 
+			st.setString(2, obj.getEmail());
+			st.setDate(3, new java.sql.Date(obj.getBirthDate().getTime()));
+			st.setDouble(4, obj.getBaseSalary());
+			st.setInt(5, obj.getDepartment().getId()); // Navegar no objeto, a partir do departamento, achar o ID dele;
+			
+			int rowsAffected = st.executeUpdate(); // Variável p guardar o tanto de linhas afetadas;
+			
+			if (rowsAffected > 0) { // Testando se as linhas alteradas foram maior que 0;
+				ResultSet rs = st.getGeneratedKeys();
+				if (rs.next()) {// if pois estamos inserindo apenas um dado;
+					int id = rs.getInt(1); // Se existir, pegar o id gerado;
+					obj.setId(id); // E atribuir dentro do objeto obj
+					DB.closeResultSet(rs); // Fechando dentro do escopo do if, pois ele foi gerado aqui, e não dá p ser fechado no finally lá em baixo;
+				}
+			}
+			else {
+				throw new DbException("Unexpected error! No rows affected!"); // Lançando exceção p caso n tenha inserido nd;
+			}
+		}
+		catch (SQLException e) {
+			throw new DbException(e.getMessage());
+		}
+		finally {
+			DB.closeStatement(st);
+		}
 	}
 
 	@Override

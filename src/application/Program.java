@@ -1,5 +1,6 @@
 package application;
 
+import java.util.Date;
 import java.util.List;
 
 import model.dao.DaoFactory;
@@ -23,10 +24,14 @@ public class Program {
 		for (Seller obj : list) {
 			System.out.println(obj);
 		}
-		System.out.println("==== TEST 3: seller findByDepartment ====");
+		System.out.println("==== TEST 3: seller findAll ====");
 		list = sellerDao.findAll(); // Reaproveitando a lista instanciada acima, descartando os dados acima;
 		for (Seller obj : list) {
 			System.out.println(obj);
 		}
+		System.out.println("==== TEST 4: seller insert  ====");
+		Seller newSeller = new Seller(null, "Greg", "greg@gmail.com", new Date(), 4000.0, department); // Inserindo os dados do novo vendedor que será inserido; null pro novo id, ele gerará automático; Reaproveitando o department lá acima, com o id, não precisando do nome do mesmo;
+		sellerDao.insert(newSeller); // Toda vez que rodar, vai inserir um novo vendedor;
+		System.out.println("Inserted! New id = " + newSeller.getId());
 	}
 }
