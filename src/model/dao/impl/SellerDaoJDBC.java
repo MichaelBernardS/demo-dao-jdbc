@@ -87,7 +87,41 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public List<Seller> findAll() {
-		return null;
+		PreparedStatement st = null;
+		ResultSet rs = null;
+		try {
+			st = conn.prepareStatement(
+					"SELECT seller.*,department.Name as DepName " // Buscando tds os campos do vendedor + o nome do departamento (dando um apelido a ele como DepName)
+					+ "FROM seller INNER JOIN department " // Dando um JOIN para buscar os dados das 2 tabelas;
+					+ "ON seller.DepartmentId = department.Id " // Tanto de vendedor qnt departamento;
+					+ "ORDER BY Name"); // Ordenado por nome, ou seja, ordem alfabética;
+			rs = st.executeQuery(); 
+			
+			List<Seller> list = new ArrayList<>();
+			Map<Integer, Department> map = new HashMap<>(); // Integer = id do departamento; Department o valor de cada departamento; Estrutura de dados map criado vazio, p guardar qqer departamento que for instanciado;
+			
+			while (rs.next()) { // Toda vez que passar pela linha do resultSet, vai testar, se o departamento já existir, vai reaproveitar ele;
+				
+				Department dep = map.get(rs.getInt("DepartmentId")); // Map criado para buscar dentro do map se já existe o dep; Pois não pode repetir o departamento, tem que ser o mesmo pros vendedores que achar, não o repetindo; Não dando nulo, é pq o dep já existe, e vai puxar esse já existente p utilizar e não criar outro;
+				
+				if (dep == null) { // Se for nulo;
+					dep = instantiateDepartment(rs); // Ai sim vai instanciar o departamento; 
+					map.put(rs.getInt("DepartmentId"), dep); // Aqui vai guardar o departamento e identificar pela key dele (getInt department) e o departamento é o que tiver na variável dep;
+				}
+				
+				Seller obj = instantiateSeller(rs, dep); // Instanciando todos os vendedores, sem repetição de departamento;
+				list.add(obj); // Adicionar esse vendedor na lista;
+			}
+			return list;
+		}
+		catch (SQLException e){
+			throw new DbException(e.getMessage());
+		}
+		finally { // finally para fechar todos os recursos;
+			DB.closeStatement(st);
+			DB.closeResultSet(rs);
+			// Não fecha a conexão, pois pode ter mais operações dentro desta classe, a conexão se fecha apenas no programa;
+		}
 	}
 
 	@Override

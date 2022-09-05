@@ -23,5 +23,10 @@ public class Program {
 		for (Seller obj : list) {
 			System.out.println(obj);
 		}
+		System.out.println("==== TEST 3: seller findByDepartment ====");
+		list = sellerDao.findAll(); // Reaproveitando a lista instanciada acima, descartando os dados acima;
+		for (Seller obj : list) {
+			System.out.println(obj);
+		}
 	}
 }
