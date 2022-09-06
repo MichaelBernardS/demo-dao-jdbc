@@ -33,5 +33,11 @@ public class Program {
 		Seller newSeller = new Seller(null, "Greg", "greg@gmail.com", new Date(), 4000.0, department); // Inserindo os dados do novo vendedor que será inserido; null pro novo id, ele gerará automático; Reaproveitando o department lá acima, com o id, não precisando do nome do mesmo;
 		sellerDao.insert(newSeller); // Toda vez que rodar, vai inserir um novo vendedor;
 		System.out.println("Inserted! New id = " + newSeller.getId());
+		
+		System.out.println("==== TEST 5: seller update  ====");
+		seller = sellerDao.findById(1); // Reaproveitando o seller acima, e carregar os dados do vendedor 1;
+		seller.setName("Martha Wayne"); // Setando um novo nome pra esse vendedor;
+		sellerDao.update(seller);
+		System.out.println("Update completed");
 	}
 }
