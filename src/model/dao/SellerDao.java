@@ -13,7 +13,6 @@ public interface SellerDao {
 	Seller findById(Integer id); // Operaçao retornando um Seller, recebendo um integer id como argumento; Operação responsável por pegar esse id, e consultar no BD um objeto com esse id, se existir, vai retornar, e se não existir, vai retornar nulo;
 	List<Seller> findAll(); // Operação para retornar todos os vendedores;
 	List<Seller> findByDepartment(Department department); // Operação responsável por buscar os vendedores dado um departamento;
-	
 }
 
 /* Padrão DAO - Objeto responsável por fazer acesso a dados relacionados a esta entidade (Seller);
