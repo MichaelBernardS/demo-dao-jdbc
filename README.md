@@ -30,7 +30,7 @@ Este projeto é uma aplicação backend utilizando a IDE Eclipse, onde fizemos u
 
 ```bash
 # clonar repositório
-git clone https://github.com/MichaelBernardS/workshop-spring3-jpa.git
+git clone https://github.com/MichaelBernardS/demo-dao-jdbc.git
 ```
 
 # Autor
